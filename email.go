@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/smtp"
+	"os"
 	"text/template"
 )
 
@@ -12,13 +13,14 @@ type SmtpTemplateData struct {
 	From           string
 	To             string
 	Subject        string
+	Hostname       string
 	FailureMessage string
 	ResqueLink     string
 }
 
 const emailTemplate = `From: {{.From}}
 To: {{.To}}
-Subject: [RQMon] {{.Subject}}
+Subject: [RQMon@{{.Hostname}}] {{.Subject}}
 
 RQMon noticed the following alert has passed our alerting threshold:
 
@@ -34,10 +36,12 @@ func SendAlertByEmail(subject string, failure string, weblink string) {
 	var err error
 	var doc bytes.Buffer
 
+	hostname, _ := os.Hostname()
 	context := &SmtpTemplateData{
 		*alertFrom,
 		*alertRecipient,
 		subject,
+		hostname,
 		failure,
 		weblink,
 	}
